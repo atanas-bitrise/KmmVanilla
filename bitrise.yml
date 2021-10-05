@@ -1,0 +1,42 @@
+---
+format_version: '11'
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+project_type: other
+trigger_map:
+- push_branch: "*"
+  workflow: primary
+- pull_request_source_branch: "*"
+  workflow: primary
+workflows:
+  primary:
+    steps:
+    - activate-ssh-key@4:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - git-clone@6: {}
+    - android-build@0:
+        inputs:
+        - variant: debug
+    - certificate-and-profile-installer@1: {}
+    - recreate-user-schemes@1:
+        inputs:
+        - project_path: "$BITRISE_SOURCE_DIR/iosApp/iosApp.xcodeproj"
+    - xcode-archive@3:
+        inputs:
+        - export_method: development
+        - scheme: iosApp
+        - team_id: 72SA8V3WYL
+        - project_path: "$BITRISE_SOURCE_DIR/iosApp/iosApp.xcodeproj"
+    - script@1:
+        title: Do anything with Script step
+    - deploy-to-bitrise-io@1: {}
+app:
+  envs:
+  - opts:
+      is_expand: false
+    BITRISE_PROFILE_ID: a043c226-0b15-4780-814a-14a0313360c9
+  - opts:
+      is_expand: false
+    BITRISE_CODE_SIGNING_IDENTITY: iPhone Developer
+  - opts:
+      is_expand: false
+    BITRISE_TEAM: 72SA8V3WYL
